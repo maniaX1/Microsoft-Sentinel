@@ -1,0 +1,51 @@
+id: 6b426f00-0371-4222-91ad-fa70a6e4ed05
+name: Share file over safe link to external user
+kind: Scheduled
+description: Triggers alert when someone shares files on OneDrive or directly on SharePoint over safe link with external user.
+severity: Medium
+queryFrequency: 6h
+queryPeriod: 6h
+triggerOperator: gt
+triggerThreshold: 0
+tactics:
+- Exfiltration
+query: |
+
+  OfficeActivity
+  | where OfficeWorkload == "OneDrive" or OfficeWorkload == "SharePoint"
+  | where Operation == "AddedToSecureLink" and TargetUserOrGroupType == "Guest"
+entityMappings:
+- entityType: Account
+  fieldMappings:
+  - identifier: AadUserId
+    columnName: UserId
+- entityType: IP
+  fieldMappings:
+  - identifier: Address
+    columnName: ClientIP
+- entityType: URL
+  fieldMappings:
+  - identifier: Url
+    columnName: Site_Url
+- entityType: MailMessage
+  fieldMappings:
+  - identifier: Recipient
+    columnName: TargetUserOrGroupName
+- entityType: File
+  fieldMappings:
+  - identifier: Name
+    columnName: SourceFileName
+suppressionDuration: 5h
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: true
+    reopenClosedIncident: false
+    lookbackDuration: 6h
+    matchingMethod: AllEntities
+    groupByEntities: []
+    groupByAlertDetails: []
+    groupByCustomDetails: []
+suppressionEnabled: false
+eventGroupingSettings:
+  aggregationKind: SingleAlert
